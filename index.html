@@ -77,6 +77,33 @@
             background: rgba(20, 18, 24, 0.85);
             backdrop-filter: blur(12px);
         }
+
+        /* Mobile Landscape Optimization for Video Modal */
+        @media (max-height: 520px) and (orientation: landscape) {
+            #video-modal-content {
+                height: 100vh !important;
+                max-height: 100vh !important;
+                border-radius: 0 !important;
+                flex-direction: row !important;
+            }
+            #video-container-box {
+                width: 68% !important;
+                height: 100% !important;
+                aspect-ratio: auto !important;
+            }
+            #video-details-box {
+                width: 32% !important;
+                height: 100% !important;
+            }
+        }
+
+        /* Fullscreen Video Container Styling */
+        #video-container-box:fullscreen, 
+        #video-container-box:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            background-color: black;
+        }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-[#0F0D13] text-slate-800 dark:text-md-onSurface font-sans min-h-screen flex flex-col md:flex-row antialiased selection:bg-purple-200 selection:text-purple-900 transition-colors duration-200">
@@ -114,13 +141,13 @@
             </button>
         </nav>
 
-        <!-- Drive Sync Status Card -->
+        <!-- Episode Collection Counter Card -->
         <div class="mt-auto bg-slate-50 dark:bg-[#1D1B20] p-3.5 rounded-2xl border border-slate-200 dark:border-[#2B2930] flex items-center gap-3">
-            <div id="sync-icon" class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-lg">cloud_done</span>
+            <div id="sync-icon" class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-lg">movie</span>
             </div>
             <div class="overflow-hidden text-xs">
-                <p id="sync-status" class="font-medium text-slate-900 dark:text-white truncate">Google Drive Sincronizado</p>
+                <p class="font-medium text-slate-900 dark:text-white truncate">Catálogo de Episodios</p>
                 <p id="episode-count" class="text-slate-500 dark:text-md-onSurfaceVariant text-[11px]">Cargando capítulos...</p>
             </div>
         </div>
@@ -164,7 +191,7 @@
                 </button>
             </div>
 
-            <!-- Filter Chips Bar (Only Season & Favorites) -->
+            <!-- Filter Chips Bar -->
             <div class="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto pt-3 pb-1 no-scrollbar text-xs">
                 <button onclick="setFilterChip('all')" class="chip-btn active shrink-0 px-3.5 py-1.5 rounded-lg bg-purple-600 text-white font-medium flex items-center gap-1.5 transition-all shadow-sm">
                     <span class="material-symbols-outlined text-sm">view_compact</span>
@@ -255,10 +282,10 @@
 
     <!-- Android Material 3 Embedded Video Player Modal -->
     <div id="video-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-0 md:p-6 bg-black/80 backdrop-blur-md transition-opacity">
-        <div class="relative w-full max-w-4xl bg-white dark:bg-[#1D1B20] md:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-[#2B2930] flex flex-col max-h-screen md:max-h-[90vh]">
+        <div id="video-modal-content" class="relative w-full h-full md:h-auto max-w-4xl bg-white dark:bg-[#1D1B20] md:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-[#2B2930] flex flex-col max-h-screen md:max-h-[90vh]">
             
             <!-- Modal Header Toolbar -->
-            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#2B2930] bg-slate-50 dark:bg-[#141218]">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#2B2930] bg-slate-50 dark:bg-[#141218] shrink-0">
                 <div class="flex items-center gap-3 overflow-hidden">
                     <span class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-600/30 text-purple-600 dark:text-purple-300 flex items-center justify-center shrink-0">
                         <span class="material-symbols-outlined text-lg">play_circle</span>
@@ -268,32 +295,41 @@
                         <p id="modal-subtitle" class="text-xs text-slate-500 dark:text-gray-400 truncate">Penn Zero • Temporada 1</p>
                     </div>
                 </div>
-                <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 flex items-center justify-center transition-colors shrink-0">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button onclick="toggleFullscreen()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 flex items-center justify-center transition-colors" title="Pantalla Completa">
+                        <span class="material-symbols-outlined text-xl">fullscreen</span>
+                    </button>
+                    <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 flex items-center justify-center transition-colors">
+                        <span class="material-symbols-outlined text-xl">close</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Video Player Iframe Box -->
-            <div class="relative w-full aspect-video bg-black flex items-center justify-center">
-                <iframe id="modal-video" class="w-full h-full border-0" allowfullscreen allow="autoplay"></iframe>
+            <div id="video-container-box" class="relative w-full aspect-video bg-black flex items-center justify-center shrink-0">
+                <iframe id="modal-video" class="w-full h-full border-0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                 
                 <div id="video-loader" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center text-purple-400 gap-3 pointer-events-none transition-opacity">
                     <div class="w-10 h-10 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin"></div>
-                    <p class="text-xs text-gray-400">Cargando transmisión desde Google Drive...</p>
+                    <p class="text-xs text-gray-400">Cargando episodio...</p>
                 </div>
             </div>
 
             <!-- Episode Details & Action Buttons -->
-            <div class="p-4 md:p-6 space-y-4 overflow-y-auto bg-white dark:bg-[#1D1B20]">
+            <div id="video-details-box" class="p-4 md:p-6 space-y-4 overflow-y-auto bg-white dark:bg-[#1D1B20] flex-1">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <span id="modal-badge-season" class="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200 dark:border-purple-500/30">
-                            T1:E01
+                            Temporada 1
                         </span>
                     </div>
 
                     <!-- Material Action Buttons -->
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="toggleFullscreen()" class="px-3.5 py-2 rounded-full bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-800/50 text-purple-900 dark:text-purple-200 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                            <span class="material-symbols-outlined text-base">fullscreen</span>
+                            Pantalla Completa
+                        </button>
                         <button id="modal-fav-btn" onclick="toggleCurrentFavorite()" class="px-3.5 py-2 rounded-full bg-slate-100 dark:bg-[#2B2930] hover:bg-slate-200 dark:hover:bg-white/10 text-rose-500 text-xs font-medium flex items-center gap-1.5 transition-colors">
                             <span id="modal-fav-icon" class="material-symbols-outlined text-base">favorite_border</span>
                             Favorito
@@ -341,77 +377,214 @@
             '1Jr6qQsrWXPWYohwKxJH7uRJbFtwCfjVW'
         ];
 
-        // Episode Metadata Catalog without dimension badges or "Mundo" labels
+        // Thoroughly reviewed Penn Zero Episode Metadata Catalog for S1 and S2
         const EPISODE_META_CATALOG = [
+            // TEMPORADA 1
             {
-                name: "T1 - Cap 01: Gallina o Pez",
+                name: "Misión Polo Norte",
                 season: 1,
-                epNum: "01",
-                desc: "Penn y sus amigos deben enfrentarse a una disparatada misión y proteger a los habitantes del caos de Rippen.",
+                desc: "Penn afronta su primera Navidad sin sus padres completando una misión heroica para salvar a Santa Claus y salvar la Navidad.",
                 bgGradient: "from-blue-600 to-indigo-900"
             },
             {
-                name: "T1 - Cap 02: Bebé Payaso",
+                name: "Pollo o Pescado",
                 season: 1,
-                epNum: "02",
-                desc: "El equipo debe rescatar el pueblo y enfrentarse a gigantescos juguetes comandados por Rippen y Larry.",
-                bgGradient: "from-pink-600 to-[#141218]"
-            },
-            {
-                name: "T1 - Cap 03: El Viejo Pirata",
-                season: 1,
-                epNum: "03",
-                desc: "Penn toma el mando en alta mar para proteger una valiosa reliquia antigua antes de que caiga en manos equivocadas.",
-                bgGradient: "from-purple-800 to-slate-900"
-            },
-            {
-                name: "T1 - Cap 04: Defendiendo la Cueva",
-                season: 1,
-                epNum: "04",
-                desc: "Penn es puesto a prueba mientras Rippen busca conquistar la fortaleza mágica principal.",
-                bgGradient: "from-emerald-700 to-teal-950"
-            },
-            {
-                name: "T1 - Cap 05: El Tazón de Cereal",
-                season: 1,
-                epNum: "05",
-                desc: "Los tres héroes se enfrentan a un desastroso evento culinario para salvar el día.",
-                bgGradient: "from-amber-600 to-red-950"
-            },
-            {
-                name: "T1 - Cap 06: Supervillanos en Práctica",
-                season: 1,
-                epNum: "06",
-                desc: "Rippen intenta robar el laboratorio principal mientras Penn entrena sus habilidades con Boone y Sashi.",
+                desc: "El equipo se convierte en héroes submarinos para detener la invasión del malvado ejército de pulpos.",
                 bgGradient: "from-cyan-600 to-blue-950"
             },
             {
-                name: "T2 - Cap 01: Al Final de la Galaxia",
-                season: 2,
-                epNum: "01",
-                desc: "Una importante misión lleva a Penn y sus amigos a través de fronteras lejanas para restaurar la paz.",
-                bgGradient: "from-violet-800 to-black"
+                name: "El Viejo, Viejo Oeste",
+                season: 1,
+                desc: "Penn ayuda a un antiguo sheriff a recuperar el valor para proteger su pueblo en el salvaje oeste.",
+                bgGradient: "from-orange-700 to-amber-950"
             },
             {
-                name: "T2 - Cap 02: Ciudad del Futuro",
-                season: 2,
-                epNum: "02",
-                desc: "Navegando entre rascacielos tecnológicos, Penn debe detener un peligroso plan ideado por Larry.",
-                bgGradient: "from-fuchsia-700 to-indigo-950"
+                name: "Bebé-Pocalipsis",
+                season: 1,
+                desc: "Penn, Boone y Sashi deben salvar una colorida ciudad peluche amenazada por gigantescos bebés robots.",
+                bgGradient: "from-pink-600 to-purple-950"
             },
             {
-                name: "T2 - Cap 03: El Vengador Vaquero",
-                season: 2,
-                epNum: "03",
-                desc: "Trenes a vapor y vaqueros veloces forman el escenario para este emocionante e inolvidable rescate.",
-                bgGradient: "from-orange-700 to-stone-900"
+                name: "Esa Chica Morada",
+                season: 1,
+                desc: "Boone y Penn enfrentan malentendidos mientras ayudan a los aldeanos de una misteriosa dimensión alienígena.",
+                bgGradient: "from-purple-800 to-slate-900"
             },
             {
-                name: "T2 - Cap 04: La Gran Batalla Final",
-                season: 2,
-                epNum: "04",
-                desc: "La confrontación épica definitiva contra Rippen para definir el destino del equipo de medio tiempo de Penn.",
+                name: "¡Soy Súper!",
+                season: 1,
+                desc: "Penn se convierte en un superhéroe de cómic real y debe aprender la verdadera responsabilidad de salvar la ciudad.",
+                bgGradient: "from-emerald-600 to-teal-950"
+            },
+            {
+                name: "Rápido y Pulgoso",
+                season: 1,
+                desc: "Una trepidante carrera de alfombras voladoras donde Penn debe superar sus propios límites.",
+                bgGradient: "from-amber-600 to-red-950"
+            },
+            {
+                name: "Cerebro-guesas",
+                season: 1,
+                desc: "En una dimensión de zombis vegetarianos, el equipo atiende un divertido restaurante para calmar los ánimos.",
+                bgGradient: "from-lime-700 to-emerald-950"
+            },
+            {
+                name: "Ciudad Risas",
+                season: 1,
+                desc: "Sashi explora su lado gracioso para resolver un conflicto en la absurda ciudad de los payasos.",
+                bgGradient: "from-fuchsia-700 to-purple-950"
+            },
+            {
+                name: "El Ídolo del Baño",
+                season: 1,
+                desc: "Penn, Boone y Sashi viajan a un templo místico lleno de trampas arqueológicas en busca de una reliquia.",
+                bgGradient: "from-amber-700 to-stone-900"
+            },
+            {
+                name: "Defendiendo la Tierra",
+                season: 1,
+                desc: "Penn debe defender el planeta frente a la gran amenaza alienígena enviada por Rippen.",
+                bgGradient: "from-indigo-700 to-slate-950"
+            },
+            {
+                name: "3 Grandes Problemas",
+                season: 1,
+                desc: "Los tres amigos luchan contra monstruos gigantes mientras resuelven un dilema de liderazgo.",
                 bgGradient: "from-rose-700 to-purple-950"
+            },
+            {
+                name: "Cereales Criminales",
+                season: 1,
+                desc: "Un viaje al mundo dentro de una caja de cereales para detener a Rippen y salvar el desayuno.",
+                bgGradient: "from-yellow-600 to-amber-900"
+            },
+            {
+                name: "La Princesa Más Bella",
+                season: 1,
+                desc: "En una dimensión medieval musical, Penn se convierte en princesa para proteger el reino.",
+                bgGradient: "from-violet-700 to-purple-950"
+            },
+            {
+                name: "Una Vida de Colores",
+                season: 1,
+                desc: "Un mundo en blanco y negro cobra vida mientras Penn combate al ejército de sombras de Rippen.",
+                bgGradient: "from-sky-700 to-blue-950"
+            },
+            {
+                name: "La Mansión de Larry",
+                season: 1,
+                desc: "Larry invita al equipo a su mansión y Penn debe competir contra Rippen para encontrar la mascota perdida.",
+                bgGradient: "from-teal-700 to-slate-900"
+            },
+            {
+                name: "Una de Dragones",
+                season: 1,
+                desc: "Penn asiste a la escuela de vuelo de dragones para ganar un torneo y superar sus celos.",
+                bgGradient: "from-red-700 to-slate-900"
+            },
+            {
+                name: "Rip-Penn",
+                season: 1,
+                desc: "Penn toma una extraña poción que lo transforma temporalmente en un monstruo similar a Rippen.",
+                bgGradient: "from-purple-900 to-black"
+            },
+            {
+                name: "El Efecto Dominó",
+                season: 1,
+                desc: "Phyllis busca la ubicación del Mundo Más Peligroso Imaginable mientras Penn arriesga todo por sus padres.",
+                bgGradient: "from-blue-800 to-indigo-950"
+            },
+            {
+                name: "Salvando a los Mundos",
+                season: 1,
+                desc: "La confrontación épica definitiva de la primera temporada para proteger el multiverso.",
+                bgGradient: "from-amber-600 to-purple-900"
+            },
+
+            // TEMPORADA 2
+            {
+                name: "Los Piratas, el Loro, los Acertijos y los Barcos Parlantes",
+                season: 2,
+                desc: "Una gran aventura de estreno de temporada en alta mar con barcos parlantes y leyendas piratas inolvidables.",
+                bgGradient: "from-cyan-700 to-blue-900"
+            },
+            {
+                name: "Alfa, Bravo, Unicornio",
+                season: 2,
+                desc: "Penn y sus amigos entran en una dimensión mágica de nobles guerreros unicornio.",
+                bgGradient: "from-pink-600 to-indigo-900"
+            },
+            {
+                name: "Un Juego de Gato y Ratón",
+                season: 2,
+                desc: "En una dimensión diminuta, el equipo debe ser más hábil que los temibles gatos gigantes.",
+                bgGradient: "from-orange-600 to-stone-900"
+            },
+            {
+                name: "Alas del Destino",
+                season: 2,
+                desc: "Héroes con alas mecánicas defienden una majestuosa ciudad flotante de la destrucción.",
+                bgGradient: "from-sky-600 to-slate-900"
+            },
+            {
+                name: "Entrenamiento de Sensibilidad",
+                season: 2,
+                desc: "Rippen y Penn deben tomar una tregua forzada para escapar juntos de un laberinto mítico.",
+                bgGradient: "from-emerald-700 to-teal-950"
+            },
+            {
+                name: "Un Cuento de Dos Magos",
+                season: 2,
+                desc: "En un reino de magia ancestral, Penn se enfrenta a los oscuros hechizos de Rippen.",
+                bgGradient: "from-indigo-800 to-purple-950"
+            },
+            {
+                name: "Roca, Papel, Tijera",
+                season: 2,
+                desc: "Un mundo vivo donde las reglas del clásico juego deciden el destino de la batalla.",
+                bgGradient: "from-stone-700 to-slate-900"
+            },
+            {
+                name: "Sé Mi Fantasma",
+                season: 2,
+                desc: "El equipo se convierte en cazafantasmas para liberar un antiguo castillo embrujado.",
+                bgGradient: "from-purple-900 to-slate-950"
+            },
+            {
+                name: "La Chinchilla",
+                season: 2,
+                desc: "Misión especial para rescatar a la criatura más adorable del multiverso antes que Rippen.",
+                bgGradient: "from-amber-600 to-red-950"
+            },
+            {
+                name: "Los Kobayashi",
+                season: 2,
+                desc: "Se revelan los secretos de la familia de Sashi mientras defienden la dimensión ninja.",
+                bgGradient: "from-rose-800 to-black"
+            },
+            {
+                name: "Mi Hijo Travieso",
+                season: 2,
+                desc: "Larry intenta demostrar su capacidad como villano supremo con la ayuda no deseada de Penn.",
+                bgGradient: "from-teal-700 to-indigo-950"
+            },
+            {
+                name: "Ese Chico Morado",
+                season: 2,
+                desc: "Nuevas sorpresas en la dimensión alienígena con la llegada de un misterioso rival.",
+                bgGradient: "from-fuchsia-800 to-purple-950"
+            },
+            {
+                name: "El Mundo Más Peligroso Imaginable",
+                season: 2,
+                desc: "Penn emprende la gran misión de rescate para traer de vuelta a sus padres atrapados en el abismo.",
+                bgGradient: "from-red-800 to-black"
+            },
+            {
+                name: "Al Final de los Mundos",
+                season: 2,
+                desc: "La batalla final épica de la serie donde Penn y sus amigos lo arriesgan todo para salvar el multiverso.",
+                bgGradient: "from-violet-800 to-black"
             }
         ];
 
@@ -450,7 +623,9 @@
         }
 
         function loadVideosFromDrive() {
-            Promise.all(FOLDER_IDS.map(getFolderContents))
+            Promise.all(FOLDER_IDS.map((folderId, folderIdx) => 
+                getFolderContents(folderId).then(files => (files || []).map(f => ({ ...f, folderSeason: folderIdx + 1 })))
+            ))
                 .then(results => {
                     const allFiles = results.flat();
                     if (!allFiles || allFiles.length === 0) {
@@ -459,19 +634,50 @@
                     }
                     allFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
                     
-                    episodesList = allFiles.map((file, idx) => {
-                        const meta = EPISODE_META_CATALOG[idx % EPISODE_META_CATALOG.length];
+                    episodesList = allFiles.map((file) => {
+                        const nameLower = file.name.toLowerCase();
+                        let detectedSeason = file.folderSeason;
+
+                        // Detect Season explicitly from file name text using robust regex
+                        if (/\b(temporada|temp|t)\s*2\b/i.test(file.name)) {
+                            detectedSeason = 2;
+                        } else if (/\b(temporada|temp|t)\s*1\b/i.test(file.name)) {
+                            detectedSeason = 1;
+                        }
+
+                        // Clean raw file name prefixes and extension
+                        let cleanName = file.name
+                            .replace(/\.(mp4|mkv|avi|webm|mov)$/i, '')
+                            .replace(/^Penn\s*Zero\s*:?\s*Cas[í|i]\s*H[é|e]roe\s*-\s*/i, '')
+                            .replace(/^Temporada\s*\d+\s*/i, '')
+                            .replace(/^Episodio\s*\d+\s*/i, '')
+                            .trim();
+
+                        // Clean extra episode numbering digits at start if present
+                        cleanName = cleanName.replace(/^\d+\s+/, '').trim();
+
+                        // Match against metadata catalog for rich description and gradient styling
+                        let meta = EPISODE_META_CATALOG.find(m => 
+                            m.season === detectedSeason && 
+                            (cleanName.toLowerCase().includes(m.name.toLowerCase()) || m.name.toLowerCase().includes(cleanName.toLowerCase()))
+                        );
+
+                        if (!meta) {
+                            meta = EPISODE_META_CATALOG.find(m => 
+                                cleanName.toLowerCase().includes(m.name.toLowerCase()) || m.name.toLowerCase().includes(cleanName.toLowerCase())
+                            );
+                        }
+
                         return {
                             id: file.id,
-                            name: file.name || meta.name,
-                            season: meta.season,
-                            epNum: meta.epNum,
-                            desc: meta.desc,
-                            bgGradient: meta.bgGradient
+                            name: cleanName || file.name,
+                            season: detectedSeason,
+                            desc: meta ? meta.desc : `Disfruta del episodio "${cleanName || file.name}" de Penn Zero: Casi Héroe.`,
+                            bgGradient: meta ? meta.bgGradient : (detectedSeason === 1 ? 'from-purple-800 to-indigo-950' : 'from-indigo-800 to-slate-900')
                         };
                     });
                     
-                    updateSyncStatus(episodesList.length + ' Episodios Encontrados');
+                    updateSyncStatus(episodesList.length + ' Episodios');
                     renderEpisodes();
                 })
                 .catch(error => {
@@ -493,12 +699,11 @@
                 id: index % 2 === 0 ? '1YjZbVqIIOlGjm_wk4zKBDPJKLNBz9RYM' : '1Jr6qQsrWXPWYohwKxJH7uRJbFtwCfjVW',
                 name: meta.name,
                 season: meta.season,
-                epNum: meta.epNum,
                 desc: meta.desc,
                 bgGradient: meta.bgGradient
             }));
 
-            updateSyncStatus('Modo Catálogo Activado');
+            updateSyncStatus(episodesList.length + ' Episodios');
             renderEpisodes();
         }
 
@@ -553,15 +758,10 @@
             const card = document.createElement('div');
             card.className = 'group relative rounded-3xl bg-white dark:bg-[#1D1B20] hover:bg-slate-50 dark:hover:bg-[#2A2730] border border-slate-200 dark:border-[#2B2930] hover:border-purple-400/60 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer transform hover:-translate-y-1';
 
-            // Card Thumbnail without dimension tags
+            // Clean thumbnail HTML without season/chapter badges
             const thumbnailHTML = `
                 <div class="relative w-full aspect-video bg-gradient-to-tr ${item.bgGradient} overflow-hidden flex items-center justify-center">
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_1px,transparent_1px)] bg-[size:16px_16px] opacity-40"></div>
-                    
-                    <!-- Season / Ep Tag -->
-                    <div class="absolute top-2.5 right-2.5 z-10 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold uppercase tracking-wider border border-white/10">
-                        T${item.season} E${item.epNum}
-                    </div>
 
                     <!-- Center Hero Emblem Icon -->
                     <div class="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-3xl shadow-xl group-hover:scale-110 transition-transform duration-300 text-white">
@@ -615,7 +815,7 @@
             document.getElementById('modal-title').textContent = item.name;
             document.getElementById('modal-subtitle').textContent = `Penn Zero: Casi Héroe • Temporada ${item.season}`;
             document.getElementById('modal-description').textContent = item.desc;
-            document.getElementById('modal-badge-season').textContent = `T${item.season}:E${item.epNum}`;
+            document.getElementById('modal-badge-season').textContent = `Temporada ${item.season}`;
 
             const videoIframe = document.getElementById('modal-video');
             const loader = document.getElementById('video-loader');
@@ -641,6 +841,35 @@
             modalVideo.src = '';
             activePlayingEpisode = null;
             document.body.style.overflow = 'auto';
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        function toggleFullscreen() {
+            const container = document.getElementById('video-container-box');
+            if (!container) return;
+
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen().then(() => {
+                        if (screen.orientation && screen.orientation.lock) {
+                            screen.orientation.lock('landscape').catch(() => {});
+                        }
+                    }).catch(() => {
+                        const videoIframe = document.getElementById('modal-video');
+                        if (videoIframe.requestFullscreen) videoIframe.requestFullscreen();
+                    });
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
         }
 
         function toggleCurrentFavorite() {
@@ -748,7 +977,6 @@
             openModal(randomEp);
         }
 
-        // Theme Switcher with Persistence
         function toggleTheme() {
             const html = document.documentElement;
             if (html.classList.contains('dark')) {
