@@ -1,26 +1,786 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penn Zero Caps</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Penn Zero: Casi Héroe - Android Edition</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        md: {
+                            primary: '#6750A4',
+                            onPrimary: '#FFFFFF',
+                            primaryContainer: '#EADDFF',
+                            onPrimaryContainer: '#21005D',
+                            surface: '#141218',
+                            onSurface: '#E6E0E9',
+                            surfaceVariant: '#2B2930',
+                            onSurfaceVariant: '#CAC4D0',
+                            outline: '#938F99',
+                            cardBg: '#1D1B20',
+                            cardBgHover: '#2A2730',
+                            accent: '#38BDF8',
+                            heroOrange: '#FF6B00'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'system-ui', 'sans-serif'],
+                        google: ['Google Sans', 'Roboto', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Material Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Google Drive API -->
     <script src="https://apis.google.com/js/api.js"></script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .dark .glass-header {
+            background: rgba(20, 18, 24, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <h1>Penn Zero Caps</h1>
-    </header>
-    <main id="video-gallery">
-        <!-- Video items will be dynamically added here -->
-    </main>
-    <div id="video-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <iframe id="modal-video" allowfullscreen></iframe>
-            <a id="download-link" href="" target="_blank" class="download-button">Abrir en Google Drive</a>
+<body class="bg-slate-100 dark:bg-[#0F0D13] text-slate-800 dark:text-md-onSurface font-sans min-h-screen flex flex-col md:flex-row antialiased selection:bg-purple-200 selection:text-purple-900 transition-colors duration-200">
+
+    <!-- Android Navigation Rail / Drawer for Desktop -->
+    <aside id="nav-drawer" class="hidden md:flex flex-col w-64 bg-white dark:bg-[#141218] border-r border-slate-200 dark:border-[#2B2930] h-screen sticky top-0 p-4 shrink-0 z-30 transition-colors duration-200">
+        <!-- App Title / Logo Header -->
+        <div class="flex items-center gap-3 px-3 py-4 mb-4">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-orange-500/20 font-bold text-xl">
+                ⚡
+            </div>
+            <div>
+                <h1 class="font-bold text-lg text-slate-900 dark:text-white leading-tight font-google">Penn Zero</h1>
+                <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">Casi Héroe • Android</p>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="space-y-1 flex-1">
+            <button onclick="filterByTab('all')" id="nav-btn-all" class="nav-drawer-item active w-full flex items-center gap-4 px-4 py-3 rounded-full text-sm font-medium transition-colors bg-purple-100 dark:bg-purple-900/40 text-purple-900 dark:text-purple-200">
+                <span class="material-symbols-outlined">grid_view</span>
+                <span>Todos los Episodios</span>
+            </button>
+            <button onclick="filterByTab('season1')" id="nav-btn-season1" class="nav-drawer-item w-full flex items-center gap-4 px-4 py-3 rounded-full text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-md-onSurfaceVariant">
+                <span class="material-symbols-outlined">filter_1</span>
+                <span>Temporada 1</span>
+            </button>
+            <button onclick="filterByTab('season2')" id="nav-btn-season2" class="nav-drawer-item w-full flex items-center gap-4 px-4 py-3 rounded-full text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-md-onSurfaceVariant">
+                <span class="material-symbols-outlined">filter_2</span>
+                <span>Temporada 2</span>
+            </button>
+            <button onclick="filterByTab('favorites')" id="nav-btn-favorites" class="nav-drawer-item w-full flex items-center gap-4 px-4 py-3 rounded-full text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-md-onSurfaceVariant">
+                <span class="material-symbols-outlined">favorite</span>
+                <span>Mis Favoritos</span>
+            </button>
+        </nav>
+
+        <!-- Drive Sync Status Card -->
+        <div class="mt-auto bg-slate-50 dark:bg-[#1D1B20] p-3.5 rounded-2xl border border-slate-200 dark:border-[#2B2930] flex items-center gap-3">
+            <div id="sync-icon" class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-lg">cloud_done</span>
+            </div>
+            <div class="overflow-hidden text-xs">
+                <p id="sync-status" class="font-medium text-slate-900 dark:text-white truncate">Google Drive Sincronizado</p>
+                <p id="episode-count" class="text-slate-500 dark:text-md-onSurfaceVariant text-[11px]">Cargando capítulos...</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content View Area -->
+    <div class="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
+        
+        <!-- Android Material Top App Bar with Search -->
+        <header class="sticky top-0 z-20 glass-header border-b border-slate-200 dark:border-[#2B2930]/60 px-4 py-3 md:px-8 transition-colors duration-200">
+            <div class="max-w-7xl mx-auto flex items-center gap-3">
+                
+                <!-- Mobile Brand Header -->
+                <div class="flex md:hidden items-center gap-2 mr-auto">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                        ⚡
+                    </div>
+                    <span class="font-google font-bold text-base text-slate-900 dark:text-white">Penn Zero</span>
+                </div>
+
+                <!-- Search Input Bar -->
+                <div class="flex-1 max-w-2xl mx-auto relative">
+                    <div class="relative flex items-center">
+                        <span class="material-symbols-outlined absolute left-3.5 text-slate-400 dark:text-md-onSurfaceVariant pointer-events-none">search</span>
+                        <input 
+                            type="text" 
+                            id="search-input"
+                            placeholder="Buscar episodios o palabras clave..." 
+                            class="w-full bg-slate-100 dark:bg-[#2B2930] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-md-onSurfaceVariant text-sm pl-11 pr-10 py-2.5 rounded-full outline-none focus:ring-2 focus:ring-purple-500 transition-all border border-slate-200 dark:border-transparent"
+                            oninput="handleSearch(this.value)"
+                        >
+                        <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-3 text-slate-400 dark:text-md-onSurfaceVariant hover:text-slate-900 dark:hover:text-white">
+                            <span class="material-symbols-outlined text-lg">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" class="p-2.5 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-md-onSurfaceVariant transition-colors" title="Cambiar Tema Oscuro/Claro">
+                    <span class="material-symbols-outlined">contrast</span>
+                </button>
+            </div>
+
+            <!-- Filter Chips Bar (Only Season & Favorites) -->
+            <div class="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto pt-3 pb-1 no-scrollbar text-xs">
+                <button onclick="setFilterChip('all')" class="chip-btn active shrink-0 px-3.5 py-1.5 rounded-lg bg-purple-600 text-white font-medium flex items-center gap-1.5 transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-sm">view_compact</span>
+                    Todos los Capítulos
+                </button>
+                <button onclick="setFilterChip('season1')" class="chip-btn shrink-0 px-3.5 py-1.5 rounded-lg bg-slate-200 dark:bg-[#2B2930] text-slate-700 dark:text-md-onSurfaceVariant hover:text-slate-900 dark:hover:text-white font-medium flex items-center gap-1.5 transition-all">
+                    Temporada 1
+                </button>
+                <button onclick="setFilterChip('season2')" class="chip-btn shrink-0 px-3.5 py-1.5 rounded-lg bg-slate-200 dark:bg-[#2B2930] text-slate-700 dark:text-md-onSurfaceVariant hover:text-slate-900 dark:hover:text-white font-medium flex items-center gap-1.5 transition-all">
+                    Temporada 2
+                </button>
+                <button onclick="setFilterChip('favorites')" class="chip-btn shrink-0 px-3.5 py-1.5 rounded-lg bg-slate-200 dark:bg-[#2B2930] text-slate-700 dark:text-md-onSurfaceVariant hover:text-slate-900 dark:hover:text-white font-medium flex items-center gap-1.5 transition-all">
+                    ❤️ Favoritos
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 px-4 md:px-8 py-6 max-w-7xl w-full mx-auto">
+            
+            <!-- Hero Spotlight Card -->
+            <div class="mb-8 rounded-3xl bg-gradient-to-r from-purple-800 via-indigo-900 to-slate-900 border border-purple-500/20 p-6 md:p-8 relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 text-white">
+                <div class="relative z-10 max-w-xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-300 text-xs font-semibold mb-3">
+                        <span class="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
+                        Serie Completa En Transmisión
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-white font-google leading-tight mb-2">
+                        Penn Zero: Casi Héroe
+                    </h2>
+                    <p class="text-sm text-gray-200 mb-5 line-clamp-2 leading-relaxed">
+                        Disfruta de todos los capítulos completos de Penn, Boone y Sashi deteniendo los malvados planes de Rippen y Larry.
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <button onclick="playRandomEpisode()" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold text-sm shadow-lg shadow-orange-600/30 flex items-center gap-2 transition-all transform active:scale-95">
+                            <span class="material-symbols-outlined text-lg">shuffle</span>
+                            Episodio Aleatorio
+                        </button>
+                        <button onclick="filterByTab('favorites')" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-sm flex items-center gap-2 transition-all">
+                            <span class="material-symbols-outlined text-lg text-rose-400">favorite</span>
+                            Guardados
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Graphic Decorative Tag -->
+                <div class="relative z-10 shrink-0 hidden sm:flex items-center justify-center">
+                    <div class="w-32 h-32 rounded-3xl bg-gradient-to-tr from-purple-600 to-pink-500 p-1 rotate-3 shadow-xl">
+                        <div class="w-full h-full bg-[#141218] rounded-[22px] flex flex-col items-center justify-center p-3 text-center">
+                            <span class="text-3xl mb-1">⚡</span>
+                            <span class="text-xs font-bold text-purple-300">PENN ZERO</span>
+                            <span class="text-[10px] text-gray-400">COLECCIÓN</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            </div>
+
+            <!-- Section Title Header -->
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-2">
+                    <span id="section-icon" class="material-symbols-outlined text-purple-600 dark:text-purple-400">movie</span>
+                    <h3 id="section-title" class="font-google text-xl font-bold text-slate-900 dark:text-white">Todos los Episodios</h3>
+                    <span id="results-count" class="text-xs text-slate-500 dark:text-gray-400 bg-slate-200 dark:bg-white/5 px-2.5 py-0.5 rounded-full border border-slate-300 dark:border-white/10">0</span>
+                </div>
+            </div>
+
+            <!-- Episodes Cards Grid -->
+            <div id="video-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <!-- Episode cards dynamically generated -->
+            </div>
+
+            <!-- Empty State Loader / No Results -->
+            <div id="empty-state" class="hidden flex-col items-center justify-center text-center py-16 px-4">
+                <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-300 text-2xl mb-4">
+                    <span class="material-symbols-outlined text-3xl">search_off</span>
+                </div>
+                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">No se encontraron episodios</h4>
+                <p class="text-sm text-slate-500 dark:text-gray-400 max-w-sm">Prueba ajustando la búsqueda o seleccionando otra categoría en la barra superior.</p>
+                <button onclick="resetFilters()" class="mt-4 px-4 py-2 rounded-full bg-purple-600 text-white text-xs font-medium hover:bg-purple-500 transition-colors">
+                    Restablecer Filtros
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Android Material 3 Embedded Video Player Modal -->
+    <div id="video-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-0 md:p-6 bg-black/80 backdrop-blur-md transition-opacity">
+        <div class="relative w-full max-w-4xl bg-white dark:bg-[#1D1B20] md:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-[#2B2930] flex flex-col max-h-screen md:max-h-[90vh]">
+            
+            <!-- Modal Header Toolbar -->
+            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#2B2930] bg-slate-50 dark:bg-[#141218]">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <span class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-600/30 text-purple-600 dark:text-purple-300 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-lg">play_circle</span>
+                    </span>
+                    <div class="overflow-hidden">
+                        <h3 id="modal-title" class="font-bold text-sm md:text-base text-slate-900 dark:text-white truncate font-google">Título del Episodio</h3>
+                        <p id="modal-subtitle" class="text-xs text-slate-500 dark:text-gray-400 truncate">Penn Zero • Temporada 1</p>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 flex items-center justify-center transition-colors shrink-0">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Video Player Iframe Box -->
+            <div class="relative w-full aspect-video bg-black flex items-center justify-center">
+                <iframe id="modal-video" class="w-full h-full border-0" allowfullscreen allow="autoplay"></iframe>
+                
+                <div id="video-loader" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center text-purple-400 gap-3 pointer-events-none transition-opacity">
+                    <div class="w-10 h-10 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin"></div>
+                    <p class="text-xs text-gray-400">Cargando transmisión desde Google Drive...</p>
+                </div>
+            </div>
+
+            <!-- Episode Details & Action Buttons -->
+            <div class="p-4 md:p-6 space-y-4 overflow-y-auto bg-white dark:bg-[#1D1B20]">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <span id="modal-badge-season" class="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200 dark:border-purple-500/30">
+                            T1:E01
+                        </span>
+                    </div>
+
+                    <!-- Material Action Buttons -->
+                    <div class="flex items-center gap-2">
+                        <button id="modal-fav-btn" onclick="toggleCurrentFavorite()" class="px-3.5 py-2 rounded-full bg-slate-100 dark:bg-[#2B2930] hover:bg-slate-200 dark:hover:bg-white/10 text-rose-500 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                            <span id="modal-fav-icon" class="material-symbols-outlined text-base">favorite_border</span>
+                            Favorito
+                        </button>
+                        <a id="download-link" href="#" target="_blank" class="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-purple-600/30 transition-all">
+                            <span class="material-symbols-outlined text-base">open_in_new</span>
+                            Abrir en Drive
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <p id="modal-description" class="text-xs md:text-sm text-slate-600 dark:text-gray-300 leading-relaxed">
+                    Penn Zero y sus mejores amigos Boone y Sashi viven divertidas aventuras deteniendo los malvados planes de Rippen y Larry.
+                </p>
+            </div>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <!-- Mobile Material Bottom Navigation Bar (Android style) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#141218]/95 backdrop-blur-lg border-t border-slate-200 dark:border-[#2B2930] flex items-center justify-around py-2 px-1 transition-colors duration-200">
+        <button onclick="filterByTab('all')" id="mob-nav-all" class="mob-nav-item active flex flex-col items-center justify-center text-purple-600 dark:text-purple-400 py-1 px-3">
+            <span class="material-symbols-outlined text-xl mb-0.5">grid_view</span>
+            <span class="text-[10px] font-medium">Capítulos</span>
+        </button>
+        <button onclick="filterByTab('season1')" id="mob-nav-season1" class="mob-nav-item flex flex-col items-center justify-center text-slate-500 dark:text-gray-400 py-1 px-3">
+            <span class="material-symbols-outlined text-xl mb-0.5">filter_1</span>
+            <span class="text-[10px] font-medium">Temp 1</span>
+        </button>
+        <button onclick="filterByTab('season2')" id="mob-nav-season2" class="mob-nav-item flex flex-col items-center justify-center text-slate-500 dark:text-gray-400 py-1 px-3">
+            <span class="material-symbols-outlined text-xl mb-0.5">filter_2</span>
+            <span class="text-[10px] font-medium">Temp 2</span>
+        </button>
+        <button onclick="filterByTab('favorites')" id="mob-nav-favorites" class="mob-nav-item flex flex-col items-center justify-center text-slate-500 dark:text-gray-400 py-1 px-3">
+            <span class="material-symbols-outlined text-xl mb-0.5">favorite</span>
+            <span class="text-[10px] font-medium">Favoritos</span>
+        </button>
+    </nav>
+
+    <script>
+        // Google Drive Configuration
+        const API_KEY = 'AIzaSyCC0SvC3CQiDFStxQq0efuQvXFOILoAocs';
+        const FOLDER_IDS = [
+            '1YjZbVqIIOlGjm_wk4zKBDPJKLNBz9RYM',
+            '1Jr6qQsrWXPWYohwKxJH7uRJbFtwCfjVW'
+        ];
+
+        // Episode Metadata Catalog without dimension badges or "Mundo" labels
+        const EPISODE_META_CATALOG = [
+            {
+                name: "T1 - Cap 01: Gallina o Pez",
+                season: 1,
+                epNum: "01",
+                desc: "Penn y sus amigos deben enfrentarse a una disparatada misión y proteger a los habitantes del caos de Rippen.",
+                bgGradient: "from-blue-600 to-indigo-900"
+            },
+            {
+                name: "T1 - Cap 02: Bebé Payaso",
+                season: 1,
+                epNum: "02",
+                desc: "El equipo debe rescatar el pueblo y enfrentarse a gigantescos juguetes comandados por Rippen y Larry.",
+                bgGradient: "from-pink-600 to-[#141218]"
+            },
+            {
+                name: "T1 - Cap 03: El Viejo Pirata",
+                season: 1,
+                epNum: "03",
+                desc: "Penn toma el mando en alta mar para proteger una valiosa reliquia antigua antes de que caiga en manos equivocadas.",
+                bgGradient: "from-purple-800 to-slate-900"
+            },
+            {
+                name: "T1 - Cap 04: Defendiendo la Cueva",
+                season: 1,
+                epNum: "04",
+                desc: "Penn es puesto a prueba mientras Rippen busca conquistar la fortaleza mágica principal.",
+                bgGradient: "from-emerald-700 to-teal-950"
+            },
+            {
+                name: "T1 - Cap 05: El Tazón de Cereal",
+                season: 1,
+                epNum: "05",
+                desc: "Los tres héroes se enfrentan a un desastroso evento culinario para salvar el día.",
+                bgGradient: "from-amber-600 to-red-950"
+            },
+            {
+                name: "T1 - Cap 06: Supervillanos en Práctica",
+                season: 1,
+                epNum: "06",
+                desc: "Rippen intenta robar el laboratorio principal mientras Penn entrena sus habilidades con Boone y Sashi.",
+                bgGradient: "from-cyan-600 to-blue-950"
+            },
+            {
+                name: "T2 - Cap 01: Al Final de la Galaxia",
+                season: 2,
+                epNum: "01",
+                desc: "Una importante misión lleva a Penn y sus amigos a través de fronteras lejanas para restaurar la paz.",
+                bgGradient: "from-violet-800 to-black"
+            },
+            {
+                name: "T2 - Cap 02: Ciudad del Futuro",
+                season: 2,
+                epNum: "02",
+                desc: "Navegando entre rascacielos tecnológicos, Penn debe detener un peligroso plan ideado por Larry.",
+                bgGradient: "from-fuchsia-700 to-indigo-950"
+            },
+            {
+                name: "T2 - Cap 03: El Vengador Vaquero",
+                season: 2,
+                epNum: "03",
+                desc: "Trenes a vapor y vaqueros veloces forman el escenario para este emocionante e inolvidable rescate.",
+                bgGradient: "from-orange-700 to-stone-900"
+            },
+            {
+                name: "T2 - Cap 04: La Gran Batalla Final",
+                season: 2,
+                epNum: "04",
+                desc: "La confrontación épica definitiva contra Rippen para definir el destino del equipo de medio tiempo de Penn.",
+                bgGradient: "from-rose-700 to-purple-950"
+            }
+        ];
+
+        // State Variables
+        let episodesList = [];
+        let favoritesList = JSON.parse(localStorage.getItem('penn_favorites') || '[]');
+        let currentTab = 'all';
+        let currentChip = 'all';
+        let searchQuery = '';
+        let activePlayingEpisode = null;
+
+        // Elements
+        const galleryContainer = document.getElementById('video-gallery');
+        const emptyState = document.getElementById('empty-state');
+        const modal = document.getElementById('video-modal');
+        const modalVideo = document.getElementById('modal-video');
+        const downloadLink = document.getElementById('download-link');
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search');
+
+        function initClient() {
+            if (typeof gapi === 'undefined' || !gapi.client) {
+                fallbackToMockData();
+                return;
+            }
+
+            gapi.client.init({
+                apiKey: API_KEY,
+                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+            }).then(function () {
+                loadVideosFromDrive();
+            }).catch(function(error) {
+                console.warn('Drive API Client init error, fallback active:', error);
+                fallbackToMockData();
+            });
+        }
+
+        function loadVideosFromDrive() {
+            Promise.all(FOLDER_IDS.map(getFolderContents))
+                .then(results => {
+                    const allFiles = results.flat();
+                    if (!allFiles || allFiles.length === 0) {
+                        fallbackToMockData();
+                        return;
+                    }
+                    allFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
+                    
+                    episodesList = allFiles.map((file, idx) => {
+                        const meta = EPISODE_META_CATALOG[idx % EPISODE_META_CATALOG.length];
+                        return {
+                            id: file.id,
+                            name: file.name || meta.name,
+                            season: meta.season,
+                            epNum: meta.epNum,
+                            desc: meta.desc,
+                            bgGradient: meta.bgGradient
+                        };
+                    });
+                    
+                    updateSyncStatus(episodesList.length + ' Episodios Encontrados');
+                    renderEpisodes();
+                })
+                .catch(error => {
+                    console.warn('Error fetching Drive contents, fallback active:', error);
+                    fallbackToMockData();
+                });
+        }
+
+        function getFolderContents(folderId) {
+            return gapi.client.drive.files.list({
+                q: `'${folderId}' in parents and mimeType contains 'video/'`,
+                fields: 'files(id, name)',
+                orderBy: 'name'
+            }).then(response => response.result.files || []);
+        }
+
+        function fallbackToMockData() {
+            episodesList = EPISODE_META_CATALOG.map((meta, index) => ({
+                id: index % 2 === 0 ? '1YjZbVqIIOlGjm_wk4zKBDPJKLNBz9RYM' : '1Jr6qQsrWXPWYohwKxJH7uRJbFtwCfjVW',
+                name: meta.name,
+                season: meta.season,
+                epNum: meta.epNum,
+                desc: meta.desc,
+                bgGradient: meta.bgGradient
+            }));
+
+            updateSyncStatus('Modo Catálogo Activado');
+            renderEpisodes();
+        }
+
+        function updateSyncStatus(text) {
+            const countEl = document.getElementById('episode-count');
+            if (countEl) countEl.textContent = text;
+        }
+
+        function renderEpisodes() {
+            galleryContainer.innerHTML = '';
+
+            const filtered = episodesList.filter(item => {
+                // Tab filter
+                if (currentTab === 'season1' && item.season !== 1) return false;
+                if (currentTab === 'season2' && item.season !== 2) return false;
+                if (currentTab === 'favorites' && !favoritesList.includes(item.id)) return false;
+
+                // Chip filter
+                if (currentChip === 'season1' && item.season !== 1) return false;
+                if (currentChip === 'season2' && item.season !== 2) return false;
+                if (currentChip === 'favorites' && !favoritesList.includes(item.id)) return false;
+
+                // Search query
+                if (searchQuery.trim() !== '') {
+                    const q = searchQuery.toLowerCase();
+                    const matchName = item.name.toLowerCase().includes(q);
+                    const matchDesc = item.desc.toLowerCase().includes(q);
+                    return matchName || matchDesc;
+                }
+
+                return true;
+            });
+
+            document.getElementById('results-count').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                filtered.forEach(item => {
+                    const card = createMaterialEpisodeCard(item);
+                    galleryContainer.appendChild(card);
+                });
+            }
+        }
+
+        function createMaterialEpisodeCard(item) {
+            const isFav = favoritesList.includes(item.id);
+            const card = document.createElement('div');
+            card.className = 'group relative rounded-3xl bg-white dark:bg-[#1D1B20] hover:bg-slate-50 dark:hover:bg-[#2A2730] border border-slate-200 dark:border-[#2B2930] hover:border-purple-400/60 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer transform hover:-translate-y-1';
+
+            // Card Thumbnail without dimension tags
+            const thumbnailHTML = `
+                <div class="relative w-full aspect-video bg-gradient-to-tr ${item.bgGradient} overflow-hidden flex items-center justify-center">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_1px,transparent_1px)] bg-[size:16px_16px] opacity-40"></div>
+                    
+                    <!-- Season / Ep Tag -->
+                    <div class="absolute top-2.5 right-2.5 z-10 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold uppercase tracking-wider border border-white/10">
+                        T${item.season} E${item.epNum}
+                    </div>
+
+                    <!-- Center Hero Emblem Icon -->
+                    <div class="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-3xl shadow-xl group-hover:scale-110 transition-transform duration-300 text-white">
+                        ⚡
+                    </div>
+
+                    <!-- Play Overlay Button -->
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                        <div class="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-lg shadow-purple-600/50 transform scale-75 group-hover:scale-100 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">play_arrow</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            card.innerHTML = `
+                ${thumbnailHTML}
+                <div class="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                        <h4 class="font-google font-bold text-sm text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors line-clamp-1 mb-1">
+                            ${item.name}
+                        </h4>
+                        <p class="text-xs text-slate-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-3">
+                            ${item.desc}
+                        </p>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/5 text-xs">
+                        <span class="text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">play_circle</span>
+                            Reproducir
+                        </span>
+                        
+                        <!-- Favorite Button -->
+                        <button onclick="event.stopPropagation(); toggleFavorite('${item.id}')" class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-rose-500 transition-colors">
+                            <span class="material-symbols-outlined text-lg ${isFav ? 'text-rose-500 fill-1' : ''}">
+                                ${isFav ? 'favorite' : 'favorite_border'}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => openModal(item));
+            return card;
+        }
+
+        function openModal(item) {
+            activePlayingEpisode = item;
+            
+            document.getElementById('modal-title').textContent = item.name;
+            document.getElementById('modal-subtitle').textContent = `Penn Zero: Casi Héroe • Temporada ${item.season}`;
+            document.getElementById('modal-description').textContent = item.desc;
+            document.getElementById('modal-badge-season').textContent = `T${item.season}:E${item.epNum}`;
+
+            const videoIframe = document.getElementById('modal-video');
+            const loader = document.getElementById('video-loader');
+            
+            loader.style.opacity = '1';
+            videoIframe.src = `https://drive.google.com/file/d/${item.id}/preview`;
+            downloadLink.href = `https://drive.google.com/file/d/${item.id}/view`;
+
+            videoIframe.onload = () => {
+                loader.style.opacity = '0';
+            };
+
+            updateModalFavState();
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            modalVideo.src = '';
+            activePlayingEpisode = null;
+            document.body.style.overflow = 'auto';
+        }
+
+        function toggleCurrentFavorite() {
+            if (!activePlayingEpisode) return;
+            toggleFavorite(activePlayingEpisode.id);
+            updateModalFavState();
+        }
+
+        function updateModalFavState() {
+            if (!activePlayingEpisode) return;
+            const isFav = favoritesList.includes(activePlayingEpisode.id);
+            const favIcon = document.getElementById('modal-fav-icon');
+            if (isFav) {
+                favIcon.textContent = 'favorite';
+                favIcon.classList.add('text-rose-500');
+            } else {
+                favIcon.textContent = 'favorite_border';
+                favIcon.classList.remove('text-rose-500');
+            }
+        }
+
+        function filterByTab(tab) {
+            currentTab = tab;
+
+            document.querySelectorAll('.nav-drawer-item').forEach(el => {
+                el.classList.remove('bg-purple-100', 'dark:bg-purple-900/40', 'text-purple-900', 'dark:text-purple-200');
+                el.classList.add('text-slate-600', 'dark:text-md-onSurfaceVariant');
+            });
+            const activeNav = document.getElementById(`nav-btn-${tab}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-purple-100', 'dark:bg-purple-900/40', 'text-purple-900', 'dark:text-purple-200');
+                activeNav.classList.remove('text-slate-600', 'dark:text-md-onSurfaceVariant');
+            }
+
+            document.querySelectorAll('.mob-nav-item').forEach(el => {
+                el.classList.remove('text-purple-600', 'dark:text-purple-400');
+                el.classList.add('text-slate-500', 'dark:text-gray-400');
+            });
+            const activeMob = document.getElementById(`mob-nav-${tab}`);
+            if (activeMob) {
+                activeMob.classList.add('text-purple-600', 'dark:text-purple-400');
+                activeMob.classList.remove('text-slate-500', 'dark:text-gray-400');
+            }
+
+            const titleEl = document.getElementById('section-title');
+            if (tab === 'all') titleEl.textContent = 'Todos los Episodios';
+            if (tab === 'season1') titleEl.textContent = 'Temporada 1';
+            if (tab === 'season2') titleEl.textContent = 'Temporada 2';
+            if (tab === 'favorites') titleEl.textContent = 'Capítulos Favoritos';
+
+            renderEpisodes();
+        }
+
+        function setFilterChip(chip) {
+            currentChip = chip;
+            document.querySelectorAll('.chip-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-slate-200', 'dark:bg-[#2B2930]', 'text-slate-700', 'dark:text-md-onSurfaceVariant');
+            });
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('bg-purple-600', 'text-white');
+                event.currentTarget.classList.remove('bg-slate-200', 'dark:bg-[#2B2930]', 'text-slate-700', 'dark:text-md-onSurfaceVariant');
+            }
+
+            renderEpisodes();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            if (val.length > 0) {
+                clearSearchBtn.classList.remove('hidden');
+            } else {
+                clearSearchBtn.classList.add('hidden');
+            }
+            renderEpisodes();
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            searchQuery = '';
+            clearSearchBtn.classList.add('hidden');
+            renderEpisodes();
+        }
+
+        function resetFilters() {
+            currentChip = 'all';
+            currentTab = 'all';
+            clearSearch();
+            filterByTab('all');
+        }
+
+        function toggleFavorite(id) {
+            if (favoritesList.includes(id)) {
+                favoritesList = favoritesList.filter(fId => fId !== id);
+            } else {
+                favoritesList.push(id);
+            }
+            localStorage.setItem('penn_favorites', JSON.stringify(favoritesList));
+            renderEpisodes();
+        }
+
+        function playRandomEpisode() {
+            if (episodesList.length === 0) return;
+            const randomEp = episodesList[Math.floor(Math.random() * episodesList.length)];
+            openModal(randomEp);
+        }
+
+        // Theme Switcher with Persistence
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('penn_theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('penn_theme', 'dark');
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('penn_theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        window.onload = function() {
+            initTheme();
+            if (typeof gapi !== 'undefined') {
+                gapi.load('client', initClient);
+            } else {
+                fallbackToMockData();
+            }
+        };
+    </script>
 </body>
 </html>
